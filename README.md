@@ -190,7 +190,7 @@ curl -X POST "http://localhost:8000/api/v1/chat/" \
 
 ```bash
 # Clone repository
-git clone <your-repository>
+git clone git@github.com:Muhammadhammad24/Infotech-Wizard.git
 cd chatbot-backend
 
 # Create virtual environment
