@@ -1,0 +1,8 @@
+{
+  "embedding_model": "paraphrase-multilingual-MiniLM-L12-v2",
+  "embedding_dimension": 384,
+  "total_documents": 3531,
+  "index_type": "IVF",
+  "created_at": "2025-09-03T00:54:34.131887",
+  "version": "1.0"
+}

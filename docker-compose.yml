@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  chatbot-api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: chatbot-backend:latest
+    container_name: it-support-chatbot-api
+    ports:
+      - "${PORT:-8000}:8000"
+    volumes:
+      # Mount data directory for FAISS index and metadata
+      - ./data:/app/data:ro
+      # Mount logs directory for persistent logging (optional)
+      - ./logs:/app/logs
+      # Mount cache directory for models (persistent across container restarts)
+      - ./cache:/app/.cache
+    environment:
+      # API Configuration
+      - API_V1_PREFIX=${API_V1_PREFIX:-/api/v1}
+      - PROJECT_NAME=${PROJECT_NAME:-IT Support Chatbot}
+      - DEBUG=${DEBUG:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      
+      # Server Configuration
+      - HOST=0.0.0.0
+      - PORT=8000
+      - WORKERS=${WORKERS:-1}
+      
+      # Model Configuration
+      - LLM_MODEL_ID=${LLM_MODEL_ID:-TinyLlama/TinyLlama-1.1B-Chat-v1.0}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-paraphrase-multilingual-MiniLM-L12-v2}
+      - GEMMA_MODEL_ID=${GEMMA_MODEL_ID:-google/gemma-3-270m-it}
+      
+      # FAISS Configuration
+      - FAISS_INDEX_PATH=/app/data/it_support_faiss_index.bin
+      - METADATA_PATH=/app/data/it_support_metadata.pkl
+      - CONFIG_PATH=/app/data/it_support_config.json
+      
+      # Search Configuration
+      - TOP_K_RESULTS=${TOP_K_RESULTS:-4}
+      - MAX_TOKENS=${MAX_TOKENS:-130}
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Resource limits (adjust based on your needs)
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '0.5'
+
+  # Optional: Redis for caching (uncomment to enable)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: chatbot-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   restart: unless-stopped
+  #   command: redis-server --appendonly yes
+
+  # Optional: Monitoring with Prometheus (uncomment to enable)
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: chatbot-prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+  #   restart: unless-stopped
+
+# Optional volumes (uncomment if using Redis or other services)
+# volumes:
+#   redis_data:
+
+networks:
+  default:
+    name: chatbot-network
+    driver: bridge
