@@ -227,6 +227,18 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 ```
 
+### **5. Run Frontend**
+
+```bash
+
+cd frontend
+
+# Install dependencies (make sure Node.JS installed in your system)
+npm install
+
+# Run frontend
+npm run dev
+```
 ---
 
 ## 📖 API Reference

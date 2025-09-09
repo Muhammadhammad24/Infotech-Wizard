@@ -19,8 +19,8 @@ cache/
 
 # Project
 .env
-data/*.bin
-data/*.pkl
+#data/*.bin
+#data/*.pkl
 logs/
 *.log
 
