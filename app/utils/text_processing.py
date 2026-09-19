@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Set, Optional
+from typing import Any, Dict, List, Set
 
 
 def extract_password_context(

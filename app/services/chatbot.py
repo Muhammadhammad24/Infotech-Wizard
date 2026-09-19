@@ -1,13 +1,15 @@
 import time
+from typing import Any, Dict, List, Optional
+
 import numpy as np
-from typing import Optional, List, Dict, Any
+
+from app.core.config import get_settings
+from app.core.logging import logger
+from app.models.responses import ChatResponse, SearchResult
 from app.services.embeddings import EmbeddingService
 from app.services.faiss_db import FAISSDatabase
 from app.services.llm import LLMService
 from app.utils.text_processing import extract_password_context
-from app.models.responses import ChatResponse, SearchResult
-from app.core.logging import logger
-from app.core.config import get_settings
 
 settings = get_settings()
 
@@ -34,7 +36,7 @@ class ChatbotService:
         
         # Get metadata
         results = []
-        for score, idx in zip(scores, indices):
+        for score, idx in zip(scores, indices, strict=True):
             if idx >= 0:
                 metadata = self.database.metadata[idx]
                 results.append({

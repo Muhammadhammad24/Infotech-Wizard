@@ -1,11 +1,13 @@
-import faiss
-import pickle
 import json
-import numpy as np
-from typing import Tuple, List, Dict, Any, Optional
+import pickle
 from pathlib import Path
-from app.core.logging import logger
+from typing import Any, Dict, List, Optional, Tuple
+
+import faiss
+import numpy as np
+
 from app.core.config import get_settings
+from app.core.logging import logger
 
 settings = get_settings()
 

@@ -1,9 +1,11 @@
-import torch
 import re
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
+
+import torch
 from transformers import pipeline
-from app.core.logging import logger
+
 from app.core.config import get_settings
+from app.core.logging import logger
 
 settings = get_settings()
 

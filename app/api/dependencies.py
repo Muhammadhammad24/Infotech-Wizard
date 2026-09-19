@@ -1,6 +1,5 @@
-from typing import Generator
-from app.services.chatbot import ChatbotService
 from app.core.logging import logger
+from app.services.chatbot import ChatbotService
 
 # Global chatbot instance
 _chatbot_service = None

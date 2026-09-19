@@ -1,8 +1,10 @@
-from sentence_transformers import SentenceTransformer
 from typing import List, Optional
+
 import numpy as np
-from app.core.logging import logger
+from sentence_transformers import SentenceTransformer
+
 from app.core.config import get_settings
+from app.core.logging import logger
 
 settings = get_settings()
 

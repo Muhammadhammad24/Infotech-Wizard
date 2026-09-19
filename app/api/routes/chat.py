@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+
+from app.api.dependencies import get_chatbot_service
+from app.core.logging import logger
 from app.models.requests import ChatRequest
 from app.models.responses import ChatResponse, ErrorResponse
-from app.api.dependencies import get_chatbot_service
 from app.services.chatbot import ChatbotService
-from app.core.logging import logger
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
