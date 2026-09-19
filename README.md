@@ -1,546 +1,152 @@
-# 🤖 IT Support Chatbot Backend API
+# Infotech Wizard
 
-<div align="center">
+**A retrieval-augmented IT helpdesk assistant.** It answers support questions by
+retrieving similar resolved tickets from a multilingual knowledge base, then
+generating a short, step-by-step answer with a small local LLM. No external API
+calls, so tickets never leave the machine.
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-009688.svg?style=for-the-badge&logo=FastAPI)](https://fastapi.tiangolo.com)
-[![Python](https://img.shields.io/badge/Python-3.8+-3776AB.svg?style=for-the-badge&logo=python)](https://python.org)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.8.0-EE4C2C.svg?style=for-the-badge&logo=pytorch)](https://pytorch.org)
-[![HuggingFace](https://img.shields.io/badge/🤗-Transformers-yellow.svg?style=for-the-badge)](https://huggingface.co/transformers)
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.116-009688?logo=fastapi&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.8-EE4C2C?logo=pytorch&logoColor=white)
+![FAISS](https://img.shields.io/badge/FAISS-vector%20search-0467DF)
+![React](https://img.shields.io/badge/React-18-149ECA?logo=react&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)
+[![CI](https://github.com/Muhammadhammad24/Infotech-Wizard/actions/workflows/ci.yml/badge.svg)](https://github.com/Muhammadhammad24/Infotech-Wizard/actions/workflows/ci.yml)
 
-**A high-performance REST API backend for an intelligent IT support chatbot powered by Retrieval-Augmented Generation (RAG)**
-
-[Features](#-features) • [Quick Start](#-quick-start) • [API Reference](#-api-reference) • [Documentation](#-documentation)
-
-</div>
-
----
-
-## ✨ Features
-
-<table>
-<tr>
-<td width="50%">
-
-### 🧠 **AI-Powered**
-- **RAG Architecture**: Retrieval-Augmented Generation with FAISS vector search
-- **Multiple Models**: Support for various LLMs via HuggingFace Transformers
-- **Smart Context**: Semantic search for relevant document retrieval
-
-</td>
-<td width="50%">
-
-### ⚡ **High Performance**
-- **FastAPI**: Async/await support with automatic documentation
-- **Optimized Search**: FAISS-powered vector similarity search
-- **Production Ready**: Comprehensive error handling and monitoring
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### 🔒 **Security First**
-- **Input Validation**: Pydantic models for request/response validation
-- **Credential Filtering**: Automatic password/sensitive data detection
-- **CORS Support**: Configurable cross-origin resource sharing
-
-</td>
-<td width="50%">
-
-### 🐳 **DevOps Ready**
-- **Docker Support**: Container-ready deployment
-- **Health Checks**: Built-in monitoring and diagnostics
-- **Auto Documentation**: Interactive Swagger UI at `/docs`
-
-</td>
-</tr>
-</table>
-
----
-
-## 🏗️ Architecture
+## How it works
 
 ```mermaid
-graph TB
-    Client[🌐 Client] --> FastAPI[⚡ FastAPI Server]
-    FastAPI --> RAG[🧠 RAG Pipeline]
-    RAG --> Retriever[🔍 Document Retriever]
-    RAG --> Generator[📝 Response Generator]
-    
-    Retriever --> FAISS[(🗂️ FAISS Vector Store)]
-    Retriever --> Embeddings[🔤 Sentence Transformers]
-    Generator --> LLM[🤖 Language Model]
-    
-    FAISS --> Metadata[(📊 Document Metadata)]
-    
-    FastAPI --> Health[❤️ Health Checks]
-    FastAPI --> Docs[📚 Auto Documentation]
+flowchart LR
+    U[React chat UI] -- POST /api/v1/chat --> A[FastAPI]
+    A --> E[Sentence-Transformer<br/>MiniLM-L12, multilingual]
+    E -- 384-d query vector --> F[(FAISS index<br/>3,531 tickets)]
+    F -- top-k similar tickets --> C[Context builder<br/>credential-aware filter]
+    C --> L[TinyLlama 1.1B Chat]
+    L -- answer + sources --> A
 ```
 
----
+1. **Embed.** The question is embedded with a multilingual MiniLM model, so a
+   German or Spanish question can match an English ticket, and the reverse.
+2. **Retrieve.** FAISS returns the `top_k` most similar tickets by cosine
+   similarity.
+3. **Ground.** Account and password topics get extra handling: the context
+   builder keeps only the relevant snippets, in English and German.
+4. **Generate.** TinyLlama answers in 3–5 bullet points, with deterministic decoding so
+   the same question gets the same answer.
+5. **Cite.** The response includes the tickets it used and their scores.
 
-## 🛠️ Technology Stack
+### Knowledge base
 
-<div align="center">
+| Tickets | Languages | Types |
+| --- | --- | --- |
+| 3,531 | English 1,218 · German 752 · Spanish 714 · French 428 · Portuguese 419 | Incident, Request, Problem, Change |
 
-| Component | Technology | Version | Purpose |
-|:---------:|:----------:|:-------:|:--------|
-| **🌐 Web Framework** | FastAPI | 0.116.1 | High-performance async API server |
-| **🔍 Vector Search** | FAISS | 1.12.0 | Efficient similarity search and clustering |
-| **🔤 Embeddings** | Sentence-Transformers | 5.1.0 | Text embedding generation |
-| **🤖 Language Models** | Transformers | 4.56.1 | LLM inference and text generation |
-| **🔥 ML Backend** | PyTorch | 2.8.0 | Deep learning model execution |
-| **✅ Data Validation** | Pydantic | 2.11.7 | Request/response validation |
-
-</div>
-
----
-
-## 📋 Prerequisites
-
-<div align="center">
-
-| Requirement | Minimum | Recommended |
-|:-----------:|:-------:|:-----------:|
-| **🐍 Python** | 3.8+ | 3.11+ |
-| **💾 RAM** | 4GB | 8GB+ |
-| **💿 Disk Space** | 1GB | 2GB+ |
-| **🎮 GPU** | Optional | CUDA-compatible |
-
-</div>
-
----
-
-## 🚀 Quick Start
-
-Choose your preferred deployment method:
-
-<div align="center">
-
-[![Docker](https://img.shields.io/badge/🐳_Docker-Recommended-2496ED?style=for-the-badge)](https://docker.com)
-[![Local](https://img.shields.io/badge/💻_Local-Development-green?style=for-the-badge)](#local-setup)
-
-</div>
-
----
-
-## 🐳 Docker Deployment (Recommended)
-
-### **Prerequisites**
-- Docker Desktop installed and running
-- Your FAISS data files in `./data/` directory
-
-### **Quick Start**
+## Quick start
 
 ```bash
-# Clone and navigate
-git clone <your-repository>
-cd chatbot-backend
-
-# Create required directories
-mkdir cache logs
-
-# Deploy with Docker Compose
-docker-compose up -d
-```
-
-### **Docker Commands**
-
-<details>
-<summary><strong>🔧 All Docker Commands</strong></summary>
-
-```bash
-# Build and start services
-docker-compose up -d --build
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-
-# Rebuild from scratch
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-
-# Check status
-docker-compose ps
-```
-
-</details>
-
-### **Test Docker Deployment**
-
-```bash
-# Health check
-curl http://localhost:8000/health
-
-# Chat endpoint
-curl -X POST "http://localhost:8000/api/v1/chat/" \
-     -H "Content-Type: application/json" \
-     -d '{"query": "How do I reset my password?"}'
-```
-
----
-
-## 💻 Local Development Setup
-
-### **1. Setup Environment**
-
-```bash
-# Clone repository
-git clone git@github.com:Muhammadhammad24/Infotech-Wizard.git
-cd chatbot-backend
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
+# 1. Install (CPU wheels are enough)
+python -m venv .venv && source .venv/bin/activate
+pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
+
+# 2. Build the vector index from data/it_support_metadata.pkl (one-off, ~1 min)
+python -m scripts.build_index
+
+# 3. Run the API, with interactive docs at http://localhost:8000/docs
+uvicorn main:app --reload
+
+# 4. Run the chat UI at http://localhost:5173 (proxies /api to :8000)
+cd frontend && npm install && npm run dev
 ```
 
-### **2. Configuration**
+Or with Docker, after step 2:
 
 ```bash
-# Copy environment template
-cp .env.example .env
+docker compose up --build
 ```
 
-### **3. Prepare Data**
+## API
 
+`POST /api/v1/chat/`
+
+```json
+{ "query": "Wie setze ich mein Passwort zurück?", "top_k": 4, "max_tokens": 150 }
 ```
-📁 data/
-├── 🗂️ it_support_faiss_index.bin
-├── 📊 it_support_metadata.pkl
-└── ⚙️ it_support_config.json
-```
-
-### **4. Run Server**
-
-```bash
-# Development
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-
-# Production
-gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
-```
-
-### **5. Run Frontend**
-
-```bash
-
-cd frontend
-
-# Install dependencies (make sure Node.JS installed in your system)
-npm install
-
-# Run frontend
-npm run dev
-```
----
-
-## 📖 API Reference
-
-### 🛣️ **Endpoints Overview**
-
-<div align="center">
-
-| Method | Endpoint | Description | Auth Required |
-|:------:|:---------|:------------|:-------------:|
-| `GET` | `/` | Root health check | ❌ |
-| `GET` | `/health` | Detailed health status | ❌ |
-| `POST` | `/api/v1/chat/` | Process chat query | ❌ |
-| `GET` | `/api/v1/chat/health` | Chat service health | ❌ |
-
-</div>
-
-### 💬 **Chat API**
-
-#### `POST /api/v1/chat/`
-
-Process a user query and return an AI-generated response using RAG.
-
-<details>
-<summary><strong>📤 Request Format</strong></summary>
 
 ```json
 {
-  "query": "How do I reset my password on MacBook Air?",
-  "top_k": 4,        // Optional: Number of context documents (1-20)
-  "max_tokens": 150  // Optional: Max response length (50-500)
-}
-```
-
-</details>
-
-<details>
-<summary><strong>📥 Success Response (200)</strong></summary>
-
-```json
-{
-  "response": "To reset your password on MacBook Air:\n1. Go to System Preferences\n2. Click Users & Groups\n3. Select your user account\n4. Click 'Change Password'\n5. Follow the prompts",
-  "query": "How do I reset your password on MacBook Air?",
-  "context_used": "MacBook password reset process: Access System Preferences...",
+  "response": "- Open Settings → Accounts\n- Choose Reset password\n- ...",
+  "query": "Wie setze ich mein Passwort zurück?",
+  "context_used": "…",
   "search_results": [
-    {
-      "subject": "MacBook Password Reset",
-      "answer": "System Preferences > Users & Groups...",
-      "score": 0.89,
-      "metadata": {"category": "macOS", "difficulty": "easy"}
-    }
+    { "subject": "Password reset request", "answer": "…", "score": 0.83, "metadata": { "queue": "IT Support" } }
   ],
-  "processing_time": 1.23,
-  "timestamp": "2024-01-15T10:30:00Z"
+  "processing_time": 1.42,
+  "timestamp": "2025-09-09T10:30:00Z"
 }
 ```
 
-</details>
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /health` | Liveness and whether the models are loaded |
+| `GET /api/v1/chat/health` | Per-component readiness: embeddings, index, LLM |
+| `GET /docs` | OpenAPI UI |
 
-<details>
-<summary><strong>❌ Error Responses</strong></summary>
+Validation: `query` 1–2000 characters, `top_k` 1–20, `max_tokens` 50–500.
+If the models aren't loaded yet, the API returns `503` rather than an empty answer.
 
-| Status Code | Description | Example Scenario |
-|:-----------:|:------------|:-----------------|
-| **400** | Bad Request | Invalid query format or parameters |
-| **503** | Service Unavailable | Models not loaded or service not ready |
-| **500** | Internal Server Error | Unexpected processing error |
+## Configuration
 
-```json
-{
-  "error": "Validation Error",
-  "detail": "Query must be between 1 and 2000 characters",
-  "timestamp": "2024-01-15T10:30:00Z"
-}
+All settings are environment variables (see [`.env.example`](.env.example)):
+
+| Variable | Default | |
+| --- | --- | --- |
+| `LLM_MODEL_ID` | `TinyLlama/TinyLlama-1.1B-Chat-v1.0` | Any Hugging Face chat model |
+| `EMBEDDING_MODEL` | `paraphrase-multilingual-MiniLM-L12-v2` | Must match the index |
+| `TOP_K_RESULTS` | `4` | Tickets retrieved per question |
+| `MAX_TOKENS` | `130` | Default answer length |
+| `DEBUG` | `false` | When `false`, models warm up at startup |
+
+## Project layout
+
+```
+app/
+  api/routes/chat.py     HTTP layer, validation and error mapping
+  services/              embeddings, FAISS store, LLM, orchestration
+  models/                request and response schemas
+  core/                  settings and logging
+scripts/
+  build_index.py         rebuilds the FAISS index from ticket metadata
+  deploy.sh, stop.sh     Docker helpers
+frontend/                React + Vite + Tailwind chat client
+tests/                   API tests with the model layer faked out
 ```
 
-</details>
+## Tests
 
----
-
-## 🧪 Testing
-
-### 🔍 **Service Diagnostics**
-
-```bash
-# Run comprehensive service tests
-python test.py
-```
-
-**Tests Include:**
-- ✅ Embedding service functionality
-- ✅ FAISS database loading
-- ✅ LLM service initialization
-- ✅ Chatbot service integration
-
-### 🚀 **Load Testing**
-
-```bash
-# Install testing dependencies
-pip install pytest pytest-asyncio httpx locust
-
-# Run unit tests
-pytest tests/ -v
-
-# Run load tests
-locust -f tests/load_test.py --host=http://localhost:8000
-```
-
----
-
-## ⚙️ Configuration Reference
-
-<details>
-<summary><strong>🌍 Environment Variables</strong></summary>
-
-| Variable | Default | Description |
-|:---------|:--------|:------------|
-| `API_V1_PREFIX` | `/api/v1` | API version prefix |
-| `PROJECT_NAME` | `IT Support Chatbot` | Application name |
-| `DEBUG` | `True` | Enable debug mode |
-| `HOST` | `0.0.0.0` | Server bind address |
-| `PORT` | `8000` | Server port |
-| `LOG_LEVEL` | `INFO` | Logging level |
-| `LLM_MODEL_ID` | `TinyLlama/TinyLlama-1.1B-Chat-v1.0` | HuggingFace model ID |
-| `EMBEDDING_MODEL` | `paraphrase-multilingual-MiniLM-L12-v2` | Sentence transformer model |
-
-</details>
-
-<details>
-<summary><strong>🤖 Supported Models</strong></summary>
-
-**LLM Models:**
-- `TinyLlama/TinyLlama-1.1B-Chat-v1.0` (default, lightweight)
-- `google/gemma-2-2b-it` (better quality)
-- `microsoft/DialoGPT-medium`
-
-**Embedding Models:**
-- `paraphrase-multilingual-MiniLM-L12-v2` (default, multilingual)
-- `all-MiniLM-L6-v2` (English, faster)
-- `all-mpnet-base-v2` (English, higher quality)
-
-</details>
-
----
-
-## 🚀 Performance & Scaling
-
-### **📊 Optimization Strategies**
-
-<table>
-<tr>
-<td width="50%">
-
-#### **🔥 Performance**
-- Model quantization for faster inference
-- Response caching with Redis
-- CPU-only inference for embeddings
-- Batch processing for multiple queries
-
-</td>
-<td width="50%">
-
-#### **📈 Scaling**
-- Horizontal scaling with load balancers
-- GPU acceleration for larger models
-- Microservice architecture
-- CDN for static assets
-
-</td>
-</tr>
-</table>
-
-### **📈 Monitoring**
-
-- 📊 Built-in metrics and health checks
-- 📝 Structured logging for observability
-- ⏱️ Processing time tracking
-- 🚨 Error rate monitoring
-
----
-
-## 🔒 Security
-
-### **🛡️ Built-in Security Features**
-
-<div align="center">
-
-| Feature | Description |
-|:--------|:------------|
-| **✅ Input Validation** | Pydantic models validate all inputs |
-| **📏 Query Limits** | Prevents abuse with length restrictions |
-| **🔐 Password Filtering** | Automatic credential detection |
-| **🌍 CORS Configuration** | Configurable cross-origin settings |
-| **🔍 Error Sanitization** | Prevents information leakage |
-
-</div>
-
-### **🔐 Production Security Checklist**
-
-- [ ] Configure CORS origins appropriately
-- [ ] Use HTTPS in production
-- [ ] Implement rate limiting
-- [ ] Set up API authentication
-- [ ] Monitor security events
-- [ ] Keep dependencies updated
-
----
-
-## 🐛 Troubleshooting
-
-<details>
-<summary><strong>❌ Common Issues</strong></summary>
-
-### **1. Models Not Loading**
-```bash
-# Error: No module named 'sentence_transformers'
-pip install sentence-transformers
-```
-
-### **2. FAISS Index Not Found**
-```bash
-# Ensure FAISS index files exist in data directory
-ls -la ./data/
-```
-
-### **3. Out of Memory**
-```bash
-# Force CPU usage
-export CUDA_VISIBLE_DEVICES=""
-```
-
-### **4. Port Already in Use**
-```bash
-# Change port or kill existing process
-export PORT=8001
-# or
-lsof -ti:8000 | xargs kill -9
-```
-
-</details>
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-<div align="center">
-
-### **Development Setup**
 ```bash
 pip install -r requirements-dev.txt
-pre-commit install
+pytest
 ```
 
-### **Code Style**
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+The tests replace `ChatbotService` with a fake through FastAPI's dependency
+overrides, so they cover routing, validation and error handling without
+downloading any models. CI runs them on every push.
 
-</div>
+## Design notes
 
----
+- **Local models only.** Support tickets often contain personal data. Keeping
+  inference on the box avoids sending it to a third-party API.
+- **Small generator, strong retriever.** Answer quality comes mostly from
+  retrieval, so a 1.1B model is enough to rephrase grounded steps, and the
+  whole stack runs on CPU within the 4 GB container limit.
+- **Lazy loading.** Models load on first use, or at startup in production.
+  Health endpoints report readiness separately, so orchestrators can wait for
+  the service to be ready.
 
-## 📄 License
+## Roadmap
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🆘 Support & Documentation
-
-<div align="center">
-
-### **Need Help?**
-
-[![Issues](https://img.shields.io/badge/🐛_Report_Bug-GitHub_Issues-red?style=for-the-badge)](../../issues)
-[![Documentation](https://img.shields.io/badge/📚_Documentation-Swagger_UI-green?style=for-the-badge)](/docs)
-[![Health Check](https://img.shields.io/badge/❤️_Health_Check-API_Status-blue?style=for-the-badge)](/health)
-
-</div>
-
----
-
-## 🗺️ Roadmap
-
-### **🚀 Planned Features**
-
-- [ ] 💾 Response caching with Redis
-- [ ] 🌍 Multi-language support
-- [ ] 🔐 Authentication and authorization
-- [ ] 🔄 Real-time chat via WebSocket
-- [ ] 📊 Admin dashboard for monitoring
-- [ ] 🧪 A/B testing for different models
-- [ ] 🔗 Integration with external knowledge bases
-- [ ] 💾 Open ticket if user query not solved
-
----
-
-<div align="center">
-
-**Built with ❤️ using FastAPI, PyTorch, and HuggingFace Transformers**
-
-⭐ **Star this repo if you find it helpful!** ⭐
-
-</div>
+- [ ] Streaming responses to the UI
+- [ ] Retrieval evaluation set (recall@k) to compare embedding models
+- [ ] Restrict CORS and add API-key auth for deployment
+- [ ] Reply in the user's language instead of always in English
