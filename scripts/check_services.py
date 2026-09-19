@@ -1,11 +1,12 @@
-# test_services.py - Debug service initialization
+# Smoke-test each service in isolation: python -m scripts.check_services
 import sys
+
 sys.path.append('.')
 
+from app.services.chatbot import ChatbotService
 from app.services.embeddings import EmbeddingService
 from app.services.faiss_db import FAISSDatabase
 from app.services.llm import LLMService
-from app.services.chatbot import ChatbotService
 
 print("🔍 Testing individual services...\n")
 
@@ -35,7 +36,7 @@ except Exception as e:
 print("\n3. Testing LLM Service...")
 try:
     llm = LLMService()
-    print(f"✅ LLM service initialized")
+    print("✅ LLM service initialized")
     print(f"✅ is_loaded(): {llm.is_loaded()}")
     # Don't load the model yet, just check initialization
 except Exception as e:
@@ -45,7 +46,7 @@ except Exception as e:
 print("\n4. Testing Chatbot Service...")
 try:
     chatbot = ChatbotService()
-    print(f"✅ Chatbot service initialized")
+    print("✅ Chatbot service initialized")
     print(f"✅ is_ready(): {chatbot.is_ready()}")
     
     # Check individual components
