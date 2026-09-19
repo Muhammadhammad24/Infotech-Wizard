@@ -19,13 +19,11 @@ cache/
 
 # Project
 .env
-#data/*.bin
-#data/*.pkl
 logs/
 *.log
 
-# ML Models
-models/
+# ML model weights (the app/models package is source code)
+/models/
 *.pt
 *.bin
 *.safetensors
